@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#17191b">
+    <title>Build the Food Chain</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #17191b;
+            --panel: #222528;
+            --card: #292d30;
+            --ink: #f7f8fa;
+            --muted: #c6ccd2;
+            --green: #a8e6b0;
+            --red: #ffb4ab
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--ink);
+            font: 16px/1.45 system-ui, sans-serif
+        }
+
+        main {
+            max-width: 1120px;
+            margin: auto;
+            padding: clamp(12px, 2.5vw, 28px)
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            margin: 0 0 6px
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid #3c4247;
+            border-radius: 18px;
+            padding: clamp(12px, 2vw, 20px);
+            margin: 16px 0
+        }
+
+        .rule {
+            background: #1b2b22;
+            border-left: 4px solid var(--green);
+            border-radius: 8px;
+            padding: 10px 12px
+        }
+
+        .chain {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr) 20px minmax(0, 1fr);
+            gap: 5px;
+            align-items: stretch
+        }
+
+        .slot {
+            min-width: 0;
+            min-height: 140px;
+            border: 2px dashed #7d8992;
+            border-radius: 12px;
+            background: var(--card);
+            color: var(--ink);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 7px;
+            cursor: pointer;
+            overflow: hidden
+        }
+
+        .num {
+            font-size: .72rem;
+            font-weight: 850;
+            color: #e2e7eb;
+            margin-bottom: 7px
+        }
+
+        .slot img {
+            width: 100%;
+            height: 66px;
+            object-fit: cover;
+            border-radius: 7px;
+            margin-bottom: 7px
+        }
+
+        .name {
+            font-size: clamp(.65rem, 1vw, .88rem);
+            font-weight: 800;
+            line-height: 1.2;
+            overflow-wrap: anywhere
+        }
+
+        .hint {
+            font-size: .8rem;
+            color: var(--muted)
+        }
+
+        .arrow {
+            text-align: center;
+            align-self: center;
+            font-size: clamp(1rem, 2vw, 1.6rem);
+            font-weight: 900
+        }
+
+        .tray {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 10px
+        }
+
+        .card {
+            min-width: 0;
+            background: var(--card);
+            border: 2px solid #59636c;
+            border-radius: 13px;
+            color: var(--ink);
+            padding: 9px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+            font: inherit;
+            font-size: .9rem;
+            font-weight: 750;
+            cursor: grab
+        }
+
+        .card img {
+            width: 100%;
+            height: 105px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #34393d
+        }
+
+        .card[aria-pressed=true] {
+            border: 3px solid var(--green);
+            background: #20382a
+        }
+
+        .used {
+            opacity: .4
+        }
+
+        .slot.correct {
+            border: 3px solid var(--green);
+            background: #20382a
+        }
+
+        .slot.wrong {
+            border: 3px solid var(--red);
+            background: #3a2526
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px
+        }
+
+        button.action {
+            border: 2px solid var(--green);
+            border-radius: 10px;
+            padding: 11px 17px;
+            min-height: 46px;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer
+        }
+
+        #check {
+            background: var(--green);
+            color: #142318
+        }
+
+        #reset {
+            background: transparent;
+            color: var(--ink);
+            border-color: #737d85
+        }
+
+        #continue {
+            background: #e7f2e8;
+            color: #193521
+        }
+
+        button:disabled {
+            opacity: .45;
+            cursor: not-allowed
+        }
+
+        #status {
+            background: #191c1f;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 14px 0 0;
+            min-height: 48px
+        }
+
+        #status.good {
+            border: 1px solid var(--green);
+            background: #1d3024
+        }
+
+        #status.bad {
+            border: 1px solid var(--red)
+        }
+
+        .credits {
+            color: var(--muted);
+            font-size: .78rem
+        }
+
+        .credits a {
+            color: #c6e9cd
+        }
+
+        .fallback {
+            height: 105px;
+            width: 100%;
+            display: grid;
+            place-items: center;
+            padding: 8px;
+            background: #3a3e41;
+            border-radius: 8px;
+            font-size: .78rem
+        }
+
+        @media(max-width:760px) {
+            .chain {
+                gap: 3px;
+                grid-template-columns: repeat(5, minmax(0, 1fr))
+            }
+
+            .arrow {
+                display: none
+            }
+
+            .slot {
+                min-height: 120px;
+                padding: 4px
+            }
+
+            .slot img {
+                height: 50px
+            }
+
+            .num {
+                font-size: .62rem
+            }
+
+            .name {
+                font-size: .65rem
+            }
+
+            .hint {
+                font-size: .65rem
+            }
+
+            .tray {
+                grid-template-columns: repeat(3, minmax(0, 1fr))
+            }
+
+            .card img {
+                height: 85px
+            }
+        }
+
+        @media(max-width:430px) {
+            .slot {
+                min-height: 108px;
+                padding: 3px
+            }
+
+            .slot img {
+                height: 38px
+            }
+
+            .name {
+                font-size: .6rem
+            }
+
+            .tray {
+                grid-template-columns: repeat(2, minmax(0, 1fr))
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Build the Food Chain</h1>
+        <p class="muted">Choose a photo card, then choose a numbered space. You can also drag a card into a space. Fill all five spaces and check your answer.</p>
+        <p class="rule"><b>Arrow rule:</b> → means “is consumed by”. The living thing before the arrow is eaten by the living thing after it.</p>
+        <section class="panel">
+            <h2>Your food chain — left to right</h2>
+            <div class="chain" id="chain"><button class="slot" data-slot="0"><span class="num">SPACE 1</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="1"><span class="num">SPACE 2</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="2"><span class="num">SPACE 3</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="3"><span class="num">SPACE 4</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="4"><span class="num">SPACE 5</span><span class="hint">Choose a card</span></button></div>
+            <div class="actions"><button id="check" class="action" disabled>Check my answer</button><button id="reset" class="action">Reset</button><button id="continue" class="action" hidden>Continue to mind map</button></div>
+            <p id="status" role="status" aria-live="polite">Select a card, then select a space. All five spaces must be filled before checking.</p>
+        </section>
+        <section class="panel">
+            <h2>Organism cards</h2>
+            <div class="tray" id="tray">
+                <button class="card" draggable="true" data-organism="Mangrove crab"><img alt="Photograph of a mangrove mud crab" src="./crab.jpg"><span>Mangrove crab</span></button>
+                <button class="card" draggable="true" data-organism="Collared kingfisher"><img alt="Photograph of a collared kingfisher" src="./kingfisher.jpg"><span>Collared kingfisher</span></button>
+                <button class="card" draggable="true" data-organism="Saltwater crocodile"><img alt="Photograph of a saltwater crocodile" src="./crocodile.jpg"><span>Saltwater crocodile</span></button>
+                <button class="card" draggable="true" data-organism="Mangrove tree"><img alt="Photograph of mangrove trees" src="https://upload.wikimedia.org/wikipedia/commons/3/30/Rhizophora_trees.jpg"><span>Mangrove tree</span></button>
+                <button class="card" draggable="true" data-organism="Mudskipper"><img alt="Photograph of a mudskipper" src="https://commons.wikimedia.org/wiki/Special:FilePath/Mudskipper_at_Kuala_Selangor_Nature_Park.jpg"><span>Mudskipper</span></button>
+            </div>
+            <p class="credits">Photos: Wikimedia Commons. <a href="https://commons.wikimedia.org/wiki/File:Rhizophora_trees.jpg" target="_blank" rel="noreferrer">Mangrove tree</a> · <a href="https://commons.wikimedia.org/wiki/File:Mud_crab,_Scylla_serrate.jpg" target="_blank" rel="noreferrer">Mangrove crab</a> · <a href="https://commons.wikimedia.org/wiki/File:Mudskipper_at_Kuala_Selangor_Nature_Park.jpg" target="_blank" rel="noreferrer">Mudskipper</a> · <a href="https://commons.wikimedia.org/wiki/File:Todiramphus_chloris,_collared_kingfisher.jpg" target="_blank" rel="noreferrer">Kingfisher</a> · <a href="https://commons.wikimedia.org/wiki/File:Saltwater_Crocodile.jpg" target="_blank" rel="noreferrer">Crocodile</a>.</p>
+        </section>
+    </main>
+    <script>
+        (() => {
+            const answer = ["Mangrove tree", "Mangrove crab", "Mudskipper", "Collared kingfisher", "Saltwater crocodile"],
+                slots = [...document.querySelectorAll('.slot')],
+                cards = [...document.querySelectorAll('.card')],
+                check = document.querySelector('#check'),
+                reset = document.querySelector('#reset'),
+                cont = document.querySelector('#continue'),
+                status = document.querySelector('#status');
+            let placed = Array(5).fill(null),
+                selected = null,
+                checked = false,
+                solved = false;
+
+            function msg(t, k = '') {
+                status.textContent = t;
+                status.className = k
+            }
+
+            function render() {
+                slots.forEach((s, i) => {
+                    s.classList.remove('correct', 'wrong');
+                    s.innerHTML = `<span class="num">SPACE ${i+1}${checked?(placed[i]===answer[i]?' ✓':' ✕'):''}</span>`;
+                    if (placed[i]) {
+                        let c = cards.find(x => x.dataset.organism === placed[i]),
+                            im = c.querySelector('img').cloneNode();
+                        im.draggable = false;
+                        let n = document.createElement('span');
+                        n.className = 'name';
+                        n.textContent = placed[i];
+                        s.append(im, n);
+                        if (checked) s.classList.add(placed[i] === answer[i] ? 'correct' : 'wrong')
+                    } else {
+                        let h = document.createElement('span');
+                        h.className = 'hint';
+                        h.textContent = selected ? 'Tap to place selected card' : 'Choose a card';
+                        s.append(h)
+                    }
+                });
+                cards.forEach(c => {
+                    c.classList.toggle('used', placed.includes(c.dataset.organism));
+                    c.setAttribute('aria-pressed', String(selected === c.dataset.organism))
+                });
+                check.disabled = placed.some(x => !x) || solved;
+                cont.hidden = !solved
+            }
+
+            function place(name, i) {
+                if (!name) return;
+                let old = placed.indexOf(name),
+                    displaced = placed[i];
+                if (old >= 0) placed[old] = null;
+                placed[i] = name;
+                if (displaced && old >= 0) placed[old] = displaced;
+                selected = null;
+                checked = false;
+                solved = false;
+                msg('Placed ' + name + '. Fill all five spaces to check your answer.');
+                render()
+            }
+            cards.forEach(c => {
+                c.addEventListener('click', () => {
+                    if (placed.includes(c.dataset.organism)) return;
+                    selected = selected === c.dataset.organism ? null : c.dataset.organism;
+                    msg(selected ? 'Selected ' + selected + '. Now choose a numbered space.' : 'Choose a card to begin.');
+                    render()
+                });
+                c.addEventListener('dragstart', e => {
+                    if (placed.includes(c.dataset.organism)) {
+                        e.preventDefault();
+                        return
+                    }
+                    e.dataTransfer.setData('text/plain', c.dataset.organism);
+                    e.dataTransfer.effectAllowed = 'move'
+                });
+                let im = c.querySelector('img');
+                im.addEventListener('error', () => {
+                    im.remove();
+                    let f = document.createElement('div');
+                    f.className = 'fallback';
+                    f.textContent = 'Photo unavailable — see photo credit below.';
+                    c.insertBefore(f, c.querySelector('span'))
+                })
+            });
+            slots.forEach((s, i) => {
+                s.addEventListener('click', () => {
+                    if (placed[i] && !selected) {
+                        let n = placed[i];
+                        placed[i] = null;
+                        checked = false;
+                        solved = false;
+                        msg(n + ' returned to the tray.');
+                        render()
+                    } else if (selected) place(selected, i)
+                });
+                s.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move'
+                });
+                s.addEventListener('drop', e => {
+                    e.preventDefault();
+                    let n = e.dataTransfer.getData('text/plain');
+                    if (n) place(n, i)
+                })
+            });
+            check.addEventListener('click', () => {
+                checked = true;
+                let count = placed.reduce((n, x, i) => n + (x === answer[i] ? 1 : 0), 0);
+                solved = count === 5;
+                if (solved) {
+                    msg('Correct! You built the food chain in the right order. Your result is ready to share with ChatGPT.', 'good');
+                    let result = {
+                        type: 'food-chain-completed',
+                        source: 'live-view-food-web',
+                        correct: true,
+                        score: 5,
+                        total: 5,
+                        sequence: placed,
+                        arrowMeaning: 'is consumed by'
+                    };
+                    document.documentElement.dataset.foodChainResult = JSON.stringify(result);
+                    try {
+                        parent.postMessage(result, '*')
+                    } catch (e) {}
+                } else msg(`You have ${count} of 5 positions correct. Look at the marked spaces and try again.`, 'bad');
+                render()
+            });
+            reset.addEventListener('click', () => {
+                placed = Array(5).fill(null);
+                selected = null;
+                checked = false;
+                solved = false;
+                delete document.documentElement.dataset.foodChainResult;
+                msg('Start again: choose a photo card, then choose its space.');
+                render()
+            });
+            cont.addEventListener('click', () => msg('Mind map unlocked: Mangrove tree → Mangrove crab → Mudskipper → Collared kingfisher → Saltwater crocodile. The arrow means “is consumed by”.', 'good'));
+            render()
+        })();
+
+    </script>
+</body>
+
+</html>
