@@ -327,7 +327,7 @@
         <section class="panel">
             <h2>Your food chain — left to right</h2>
             <div class="chain" id="chain"><button class="slot" data-slot="0"><span class="num">SPACE 1</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="1"><span class="num">SPACE 2</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="2"><span class="num">SPACE 3</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="3"><span class="num">SPACE 4</span><span class="hint">Choose a card</span></button><span class="arrow">→</span><button class="slot" data-slot="4"><span class="num">SPACE 5</span><span class="hint">Choose a card</span></button></div>
-            <div class="actions"><button id="check" class="action" disabled>Check my answer</button><button id="reset" class="action">Reset</button><button id="continue" class="action" hidden>Continue to mind map</button></div>
+            <div class="actions"><button id="check" class="action" disabled>Check my answer</button><button id="reset" class="action">Reset</button></div>
             <p id="status" role="status" aria-live="polite">Select a card, then select a space. All five spaces must be filled before checking.</p>
         </section>
         <section class="panel">
@@ -478,7 +478,6 @@
                 msg('Start again: choose a photo card, then choose its space.');
                 render()
             });
-            cont.addEventListener('click', () => msg('Mind map unlocked: Mangrove tree → Mangrove crab → Mudskipper → Collared kingfisher → Saltwater crocodile. The arrow means “is consumed by”.', 'good'));
             render()
         })();
 
